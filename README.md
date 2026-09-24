@@ -53,7 +53,7 @@ Entry-point filenames vary by project, so check each folder for its main script 
 
 ## Repository layout
 
-```
+```text
 .
 ├── Morse_code_generator/
 ├── Multivariable+Regression+(Start)/
