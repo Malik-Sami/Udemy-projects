@@ -26,6 +26,8 @@ class Board(db.Model):
     description = db.Column(db.String(255), default="")
     icon = db.Column(db.String(50), default="folder")
     color = db.Column(db.String(20), default="#6366f1")
+
+    # pyrefly: ignore [deprecated]
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     tasks = db.relationship('Task', backref='board', lazy=True, cascade="all, delete-orphan")
@@ -58,7 +60,9 @@ class Task(db.Model):
     due_date = db.Column(db.Date, nullable=True)
     tags = db.Column(db.String(200), default="")  # comma separated
     order_index = db.Column(db.Integer, default=0)
+    # pyrefly: ignore [deprecated]
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    # pyrefly: ignore [deprecated]
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     subtasks = db.relationship('Subtask', backref='task', lazy=True, cascade="all, delete-orphan")
@@ -90,6 +94,7 @@ class Subtask(db.Model):
     task_id = db.Column(db.Integer, db.ForeignKey('tasks.id'), nullable=False)
     title = db.Column(db.String(200), nullable=False)
     is_completed = db.Column(db.Boolean, default=False)
+    # pyrefly: ignore [deprecated]
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def __init__(self, **kwargs):
