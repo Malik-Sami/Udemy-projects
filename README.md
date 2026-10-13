@@ -11,6 +11,7 @@ Projects built while working through the **100 Days of Code: Python Pro Bootcamp
 | [`Watermarker`](./Watermarker) | Tool for adding a watermark to images. |
 | [`breakout-game`](./breakout-game) | Steve Wozniak's classic Breakout arcade game built with Python Turtle graphics. |
 | [`button_presser`](./button_presser) | Small automation script. |
+| [`cafe_wifi_website`](./cafe_wifi_website) | LaptopFriendly London: curated remote workspace & cafe directory with Wi-Fi, power sockets, live search, and Day 66 RESTful API endpoints. |
 | [`portfolio_website`](./portfolio_website) | Personal portfolio website. |
 | [`tic_tac_toe`](./tic_tac_toe) | Tic-tac-toe game. |
 
@@ -61,6 +62,7 @@ Entry-point filenames vary by project, so check each folder for its main script 
 ├── Watermarker/
 ├── breakout-game/
 ├── button_presser/
+├── cafe_wifi_website/
 ├── portfolio_website/
 ├── tic_tac_toe/
 ├── main.py              # uv-generated placeholder

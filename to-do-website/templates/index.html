@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenith TaskFlow &bull; Enterprise Kanban & Todo Platform</title>
+    <meta name="description" content="A modern, high-performance Kanban and Todo task management application inspired by Trello and Jira.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <!-- App Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div id="app-container" class="app-layout">
+        
+        <!-- ================= Top Navigation Bar ================= -->
+        <header class="navbar">
+            <div class="nav-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-name">Zenith<span class="brand-accent">Flow</span></span>
+                    <span class="brand-badge">PRO TASK MANAGER</span>
+                </div>
+            </div>
+
+            <!-- Board Selector -->
+            <div class="board-selector-wrapper">
+                <div class="board-dropdown" id="boardDropdownBtn" tabindex="0">
+                    <span class="board-color-indicator" id="currentBoardIndicator"></span>
+                    <i class="fa-solid fa-folder current-board-icon" id="currentBoardIcon"></i>
+                    <span class="current-board-name" id="currentBoardName">Sprint Roadmap & Delivery</span>
+                    <i class="fa-solid fa-chevron-down dropdown-arrow"></i>
+                </div>
+                
+                <div class="board-dropdown-menu" id="boardDropdownMenu">
+                    <div class="menu-header">WORKSPACE BOARDS</div>
+                    <div class="board-items-list" id="boardItemsList">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="menu-divider"></div>
+                    <button class="btn-menu-action" id="openNewBoardModalBtn">
+                        <i class="fa-solid fa-plus"></i> Create New Board
+                    </button>
+                </div>
+            </div>
+
+            <!-- Global Action Bar -->
+            <div class="nav-actions">
+                <!-- Search Box -->
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="searchInput" placeholder="Search tasks, tags... (Press '/' to search)" autocomplete="off">
+                    <span class="search-kbd">/</span>
+                </div>
+
+                <!-- Theme Toggle -->
+                <button class="icon-btn" id="themeToggleBtn" title="Toggle Dark / Light Mode" aria-label="Toggle theme">
+                    <i class="fa-solid fa-moon theme-moon"></i>
+                    <i class="fa-solid fa-sun theme-sun"></i>
+                </button>
+
+                <!-- Demo Data Reset -->
+                <button class="icon-btn" id="resetDataBtn" title="Reset to Sample Sprint Data" aria-label="Reset sample data">
+                    <i class="fa-solid fa-arrow-rotate-left"></i>
+                </button>
+
+                <!-- Primary New Task Action -->
+                <button class="btn btn-primary" id="openNewTaskModalBtn">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>New Task</span>
+                    <span class="btn-kbd">N</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ================= Sprint Metrics & Control Bar ================= -->
+        <section class="metrics-banner">
+            <div class="metrics-left">
+                <div class="metric-card">
+                    <div class="metric-icon metric-total"><i class="fa-solid fa-list-check"></i></div>
+                    <div class="metric-data">
+                        <span class="metric-val" id="statTotal">0</span>
+                        <span class="metric-label">Total Tasks</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon metric-progress"><i class="fa-solid fa-spinner"></i></div>
+                    <div class="metric-data">
+                        <span class="metric-val" id="statInProgress">0</span>
+                        <span class="metric-label">In Progress</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon metric-done"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="metric-data">
+                        <span class="metric-val" id="statDone">0</span>
+                        <span class="metric-label">Completed</span>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon metric-overdue"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                    <div class="metric-data">
+                        <span class="metric-val" id="statOverdue">0</span>
+                        <span class="metric-label">Overdue</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Meter -->
+            <div class="metrics-right">
+                <div class="progress-info">
+                    <div class="progress-label-row">
+                        <span class="progress-title">Sprint Completion Velocity</span>
+                        <span class="progress-percent" id="statCompletionRate">0%</span>
+                    </div>
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <!-- View Switcher Tabs -->
+                <div class="view-switch-tabs">
+                    <button class="view-tab-btn active" id="viewKanbanBtn" title="Kanban Board View">
+                        <i class="fa-solid fa-table-columns"></i>
+                        <span>Kanban</span>
+                    </button>
+                    <button class="view-tab-btn" id="viewListBtn" title="Minimalist List View">
+                        <i class="fa-solid fa-list-ul"></i>
+                        <span>List</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= Filter & Quick Toolbar ================= -->
+        <section class="toolbar">
+            <div class="toolbar-filters">
+                <span class="filter-caption"><i class="fa-solid fa-filter"></i> Filters:</span>
+                
+                <!-- Priority Filters -->
+                <div class="filter-pills" id="priorityFilterGroup">
+                    <button class="filter-pill active" data-priority="all">All Priorities</button>
+                    <button class="filter-pill pill-urgent" data-priority="urgent">Urgent</button>
+                    <button class="filter-pill pill-high" data-priority="high">High</button>
+                    <button class="filter-pill pill-medium" data-priority="medium">Medium</button>
+                    <button class="filter-pill pill-low" data-priority="low">Low</button>
+                </div>
+
+                <div class="toolbar-divider"></div>
+
+                <!-- Dynamic Tag Filter -->
+                <div class="tag-filter-wrapper">
+                    <select id="tagFilterSelect" class="toolbar-select">
+                        <option value="">All Tags</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="toolbar-meta" id="activeFilterBadge" style="display: none;">
+                <span class="active-filter-text">Filtered Results</span>
+                <button class="btn-clear-filters" id="clearFiltersBtn"><i class="fa-solid fa-xmark"></i> Clear</button>
+            </div>
+        </section>
+
+        <!-- ================= MAIN CONTENT VIEWPORT ================= -->
+        <main class="main-viewport">
+            
+            <!-- VIEW 1: KANBAN BOARD -->
+            <div class="kanban-container" id="kanbanView">
+                
+                <!-- Column: To Do / Backlog -->
+                <div class="kanban-column" data-status="todo">
+                    <div class="column-header">
+                        <div class="col-title-group">
+                            <span class="status-indicator status-todo"></span>
+                            <h2 class="col-title">To Do</h2>
+                            <span class="col-badge" id="count-todo">0</span>
+                        </div>
+                        <button class="col-add-btn" data-status="todo" title="Add task to To Do">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="column-dropzone" id="zone-todo" data-status="todo">
+                        <!-- Task cards injected here -->
+                    </div>
+                    <button class="col-quick-add" data-status="todo">
+                        <i class="fa-solid fa-plus"></i> Add a card
+                    </button>
+                </div>
+
+                <!-- Column: In Progress -->
+                <div class="kanban-column" data-status="in_progress">
+                    <div class="column-header">
+                        <div class="col-title-group">
+                            <span class="status-indicator status-progress"></span>
+                            <h2 class="col-title">In Progress</h2>
+                            <span class="col-badge" id="count-in_progress">0</span>
+                        </div>
+                        <button class="col-add-btn" data-status="in_progress" title="Add task to In Progress">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="column-dropzone" id="zone-in_progress" data-status="in_progress">
+                        <!-- Task cards injected here -->
+                    </div>
+                    <button class="col-quick-add" data-status="in_progress">
+                        <i class="fa-solid fa-plus"></i> Add a card
+                    </button>
+                </div>
+
+                <!-- Column: In Review -->
+                <div class="kanban-column" data-status="review">
+                    <div class="column-header">
+                        <div class="col-title-group">
+                            <span class="status-indicator status-review"></span>
+                            <h2 class="col-title">Review & QA</h2>
+                            <span class="col-badge" id="count-review">0</span>
+                        </div>
+                        <button class="col-add-btn" data-status="review" title="Add task to Review">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="column-dropzone" id="zone-review" data-status="review">
+                        <!-- Task cards injected here -->
+                    </div>
+                    <button class="col-quick-add" data-status="review">
+                        <i class="fa-solid fa-plus"></i> Add a card
+                    </button>
+                </div>
+
+                <!-- Column: Completed -->
+                <div class="kanban-column" data-status="done">
+                    <div class="column-header">
+                        <div class="col-title-group">
+                            <span class="status-indicator status-done"></span>
+                            <h2 class="col-title">Completed</h2>
+                            <span class="col-badge" id="count-done">0</span>
+                        </div>
+                        <button class="col-add-btn" data-status="done" title="Add task to Completed">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="column-dropzone" id="zone-done" data-status="done">
+                        <!-- Task cards injected here -->
+                    </div>
+                    <button class="col-quick-add" data-status="done">
+                        <i class="fa-solid fa-plus"></i> Add a card
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- VIEW 2: LIST VIEW (Flask.io inspired) -->
+            <div class="list-container" id="listView" style="display: none;">
+                <!-- Quick Inline List Add Bar -->
+                <div class="list-quick-add-bar">
+                    <div class="input-with-icon">
+                        <i class="fa-solid fa-plus"></i>
+                        <input type="text" id="quickListInput" placeholder="Type a task and hit Enter to instantly add...">
+                    </div>
+                    <select id="quickListPriority" class="toolbar-select">
+                        <option value="medium">Medium Priority</option>
+                        <option value="urgent">Urgent 🔥</option>
+                        <option value="high">High ⚡</option>
+                        <option value="low">Low ☕</option>
+                    </select>
+                    <button class="btn btn-primary" id="quickListSubmitBtn">Add Item</button>
+                </div>
+
+                <!-- Task Groups by Status -->
+                <div class="list-groups-wrapper" id="listGroupsWrapper">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ================= Task Detail / Edit Modal ================= -->
+    <div class="modal-backdrop" id="taskModal">
+        <div class="modal-card modal-lg">
+            <div class="modal-header">
+                <div class="modal-header-left">
+                    <span class="modal-subtitle" id="taskModalSubtitle">TASK DETAILS</span>
+                    <h3 class="modal-title" id="taskModalHeading">Edit Task</h3>
+                </div>
+                <button class="modal-close-btn" id="closeTaskModalBtn" aria-label="Close modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="taskForm" class="modal-body">
+                <input type="hidden" id="taskId">
+                <input type="hidden" id="taskBoardId">
+
+                <!-- Title Input -->
+                <div class="form-group">
+                    <label for="taskTitle" class="form-label">Task Title <span class="required">*</span></label>
+                    <input type="text" id="taskTitle" class="form-control" placeholder="What needs to be done?" required autofocus>
+                </div>
+
+                <!-- Grid of metadata -->
+                <div class="form-row-grid">
+                    <div class="form-group">
+                        <label for="taskStatus" class="form-label">Status</label>
+                        <select id="taskStatus" class="form-control form-select">
+                            <option value="todo">To Do</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="review">In Review</option>
+                            <option value="done">Completed</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskPriority" class="form-label">Priority</label>
+                        <select id="taskPriority" class="form-control form-select">
+                            <option value="low">Low ☕</option>
+                            <option value="medium" selected>Medium 🔹</option>
+                            <option value="high">High ⚡</option>
+                            <option value="urgent">Urgent 🔥</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="taskDueDate" class="form-label">Due Date</label>
+                        <input type="date" id="taskDueDate" class="form-control">
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="form-group">
+                    <label for="taskTags" class="form-label">Tags / Labels <span class="form-hint">(comma-separated, e.g. Frontend, API, Bug)</span></label>
+                    <input type="text" id="taskTags" class="form-control" placeholder="Design, Backend, Urgent">
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label for="taskDesc" class="form-label">Description & Context</label>
+                    <textarea id="taskDesc" class="form-control form-textarea" rows="3" placeholder="Provide background, technical specs, or acceptance criteria..."></textarea>
+                </div>
+
+                <!-- Subtasks / Checklist -->
+                <div class="form-group subtasks-section" id="subtaskSection">
+                    <div class="subtask-header">
+                        <label class="form-label mb-0"><i class="fa-solid fa-list-check"></i> Subtasks / Checklist</label>
+                        <span class="subtask-progress-badge" id="subtaskProgressText">0/0 Completed</span>
+                    </div>
+
+                    <div class="subtask-list" id="modalSubtaskList">
+                        <!-- Subtask items rendered here -->
+                    </div>
+
+                    <div class="add-subtask-row">
+                        <input type="text" id="newSubtaskInput" class="form-control" placeholder="Add a checklist item (hit Enter)...">
+                        <button type="button" class="btn btn-secondary" id="addSubtaskBtn">
+                            <i class="fa-solid fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="modal-footer-left">
+                        <button type="button" class="btn btn-danger-ghost" id="deleteTaskBtn" style="display: none;">
+                            <i class="fa-solid fa-trash-can"></i> Delete Task
+                        </button>
+                    </div>
+                    <div class="modal-footer-right">
+                        <button type="button" class="btn btn-secondary" id="cancelTaskModalBtn">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="saveTaskBtn">
+                            <i class="fa-solid fa-check"></i> Save Task
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= Create Board Modal ================= -->
+    <div class="modal-backdrop" id="boardModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <span class="modal-subtitle">ORGANIZATION</span>
+                    <h3 class="modal-title">Create New Board</h3>
+                </div>
+                <button class="modal-close-btn" id="closeBoardModalBtn" aria-label="Close modal">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="boardForm" class="modal-body">
+                <div class="form-group">
+                    <label for="boardName" class="form-label">Board Name <span class="required">*</span></label>
+                    <input type="text" id="boardName" class="form-control" placeholder="e.g. Q4 Growth Sprint, Hiring Pipeline" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="boardDesc" class="form-label">Description</label>
+                    <input type="text" id="boardDesc" class="form-control" placeholder="Brief objective of this board">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Accent Color</label>
+                    <div class="color-picker-row">
+                        <label class="color-radio">
+                            <input type="radio" name="boardColor" value="#6366f1" checked>
+                            <span class="color-swatch" style="background: #6366f1;"></span>
+                        </label>
+                        <label class="color-radio">
+                            <input type="radio" name="boardColor" value="#ec4899">
+                            <span class="color-swatch" style="background: #ec4899;"></span>
+                        </label>
+                        <label class="color-radio">
+                            <input type="radio" name="boardColor" value="#3b82f6">
+                            <span class="color-swatch" style="background: #3b82f6;"></span>
+                        </label>
+                        <label class="color-radio">
+                            <input type="radio" name="boardColor" value="#10b981">
+                            <span class="color-swatch" style="background: #10b981;"></span>
+                        </label>
+                        <label class="color-radio">
+                            <input type="radio" name="boardColor" value="#f59e0b">
+                            <span class="color-swatch" style="background: #f59e0b;"></span>
+                        </label>
+                        <label class="color-radio">
+                            <input type="radio" name="boardColor" value="#8b5cf6">
+                            <span class="color-swatch" style="background: #8b5cf6;"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="cancelBoardModalBtn">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Board</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= Notification Toast Container ================= -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Application Script -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
