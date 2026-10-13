@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaptopFriendly London — Best Cafes to Work with Wi-Fi & Power Sockets</title>
+    <meta name="description" content="Discover the best laptop-friendly cafes in London with high-speed Wi-Fi, power sockets, quiet corners for calls, and artisanal coffee. Inspired by laptopfriendly.co.">
+    <meta name="keywords" content="London cafes, laptop friendly cafes London, cafes with wifi London, remote work London, cafes with sockets">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <!-- Ambient Glowing Gradient Orbs -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
+
+    <!-- Navigation Header -->
+    <header class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="/" class="brand-logo" id="brand-logo" aria-label="LaptopFriendly London Home">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-mug-hot"></i>
+                    <span class="wifi-indicator"><i class="fa-solid fa-wifi"></i></span>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">LaptopFriendly</span>
+                    <span class="brand-city">London <span class="live-dot" title="Live Database"></span></span>
+                </div>
+            </a>
+
+            <div class="nav-actions">
+                <button type="button" class="btn btn-glass" id="btn-api-modal" title="View REST API documentation">
+                    <i class="fa-solid fa-code"></i>
+                    <span>REST API</span>
+                </button>
+                <button type="button" class="btn btn-glass" id="btn-lucky-pick" title="Pick a random cafe">
+                    <i class="fa-solid fa-dice"></i>
+                    <span>Lucky Pick</span>
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-open-add-modal" title="Suggest or add a cafe">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Add Cafe</span>
+                </button>
+                <button type="button" class="btn btn-icon theme-toggle" id="theme-toggle" aria-label="Toggle dark/light theme" title="Toggle theme">
+                    <i class="fa-solid fa-moon" id="theme-icon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Flash Messages Container -->
+    <div class="flash-messages-container" id="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-alert flash-{{ category }}" role="alert">
+                        <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'warning' %}fa-triangle-exclamation{% else %}fa-circle-info{% endif %}"></i>
+                        <span>{{ message }}</span>
+                        <button type="button" class="flash-close" onclick="this.parentElement.remove()" aria-label="Close notification">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="hero">
+        <div class="hero-backdrop" style="background-image: url('{{ url_for('static', filename='images/hero.jpg') }}');"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                <span>CURATED WORKSPACES • LONDON, UK</span>
+            </div>
+            <h1 class="hero-title">
+                Find London’s Best Cafes to <span class="gradient-text">Work & Brew</span>
+            </h1>
+            <p class="hero-subtitle">
+                Explore handpicked coffee shops, hotel lobbies, and creative spaces equipped with reliable Wi-Fi, accessible power sockets, and quiet corners for productive remote sessions.
+            </p>
+
+            <!-- Quick Stats Bar -->
+            <div class="stats-grid" id="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-store"></i></div>
+                    <div class="stat-details">
+                        <span class="stat-number" id="stat-total">{{ stats.total }}</span>
+                        <span class="stat-label">Curated Spots</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-wifi"></i></div>
+                    <div class="stat-details">
+                        <span class="stat-number">{{ stats.wifi_pct }}%</span>
+                        <span class="stat-label">Fast Wi-Fi</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-plug"></i></div>
+                    <div class="stat-details">
+                        <span class="stat-number">{{ stats.sockets_pct }}%</span>
+                        <span class="stat-label">Power Sockets</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fa-solid fa-mug-saucer"></i></div>
+                    <div class="stat-details">
+                        <span class="stat-number">{{ stats.avg_price }}</span>
+                        <span class="stat-label">Avg. Coffee</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Workspace Browser Section -->
+    <main class="main-container" id="main-content">
+
+        <!-- Search & Filter Control Bar -->
+        <section class="controls-panel" id="controls-panel" aria-label="Search and filter controls">
+            <div class="controls-top-row">
+                <!-- Search Box -->
+                <div class="search-box-wrapper">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        class="search-input" 
+                        placeholder="Search by cafe name, street, or neighborhood (e.g., Peckham, Shoreditch)..."
+                        autocomplete="off"
+                        aria-label="Search cafes"
+                    >
+                    <button type="button" id="clear-search-btn" class="clear-search-btn" aria-label="Clear search query" style="display: none;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Neighborhood Borough Filter -->
+                <div class="select-wrapper">
+                    <i class="fa-solid fa-location-dot select-icon"></i>
+                    <select id="location-select" class="custom-select" aria-label="Filter by neighborhood">
+                        <option value="">All Neighborhoods (London)</option>
+                        {% for loc in locations %}
+                            <option value="{{ loc }}">{{ loc }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Sort Order -->
+                <div class="select-wrapper">
+                    <i class="fa-solid fa-arrow-down-short-wide select-icon"></i>
+                    <select id="sort-select" class="custom-select" aria-label="Sort cafes by">
+                        <option value="score">Top Work Score</option>
+                        <option value="name-asc">Name: A to Z</option>
+                        <option value="price-asc">Coffee Price: Low to High</option>
+                        <option value="price-desc">Coffee Price: High to Low</option>
+                        <option value="seats-desc">Seats: Most to Least</option>
+                    </select>
+                </div>
+
+                <!-- View Mode Switcher (Grid vs List) -->
+                <div class="view-switch-group" role="group" aria-label="View layout switch">
+                    <button type="button" class="btn-view active" id="view-grid-btn" title="Grid View">
+                        <i class="fa-solid fa-table-cells-large"></i>
+                    </button>
+                    <button type="button" class="btn-view" id="view-list-btn" title="List View">
+                        <i class="fa-solid fa-list-ul"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Amenity Filter Tags / Pills -->
+            <div class="amenity-filters-row">
+                <span class="filter-label"><i class="fa-solid fa-sliders"></i> Must-haves:</span>
+                <button type="button" class="filter-chip" data-filter="sockets" id="filter-sockets">
+                    <i class="fa-solid fa-plug"></i> Power Sockets
+                </button>
+                <button type="button" class="filter-chip" data-filter="wifi" id="filter-wifi">
+                    <i class="fa-solid fa-wifi"></i> Fast Wi-Fi
+                </button>
+                <button type="button" class="filter-chip" data-filter="calls" id="filter-calls">
+                    <i class="fa-solid fa-phone-volume"></i> Call Friendly
+                </button>
+                <button type="button" class="filter-chip" data-filter="toilet" id="filter-toilet">
+                    <i class="fa-solid fa-restroom"></i> Restrooms
+                </button>
+                <button type="button" class="filter-chip" data-filter="spacious" id="filter-spacious">
+                    <i class="fa-solid fa-users"></i> Spacious (30+ Seats)
+                </button>
+                <button type="button" class="filter-chip chip-clear" id="filter-clear-all" style="display: none;">
+                    <i class="fa-solid fa-rotate-left"></i> Reset Filters
+                </button>
+            </div>
+        </section>
+
+        <!-- Status & Results Count Bar -->
+        <section class="results-header">
+            <div class="results-count-wrapper">
+                <span class="results-count" id="results-count">Showing {{ cafes|length }} cafes</span>
+                <span class="active-filter-indicator" id="active-filter-indicator"></span>
+            </div>
+            <div class="legend-wrapper">
+                <span class="legend-item"><span class="dot dot-success"></span> Verified Friendly</span>
+                <span class="legend-item"><span class="dot dot-amber"></span> High Demand</span>
+            </div>
+        </section>
+
+        <!-- Cafes Grid Display -->
+        <section class="cafes-grid" id="cafes-grid" aria-label="Cafes listing">
+            {% for cafe in cafes %}
+            <article 
+                class="cafe-card" 
+                id="cafe-card-{{ cafe.id }}"
+                data-id="{{ cafe.id }}"
+                data-name="{{ cafe.name }}"
+                data-location="{{ cafe.location }}"
+                data-price="{{ cafe.coffee_price }}"
+                data-seats="{{ cafe.seats }}"
+                data-sockets="{{ 'true' if cafe.has_sockets else 'false' }}"
+                data-wifi="{{ 'true' if cafe.has_wifi else 'false' }}"
+                data-calls="{{ 'true' if cafe.can_take_calls else 'false' }}"
+                data-toilet="{{ 'true' if cafe.has_toilet else 'false' }}"
+                data-score="{{ cafe.work_score }}"
+            >
+                <div class="card-image-wrap">
+                    <img 
+                        src="{{ cafe.img_url }}" 
+                        alt="{{ cafe.name }} interior" 
+                        class="cafe-image" 
+                        loading="lazy"
+                        onerror="this.onerror=null; this.src='/static/images/default_cafe.jpg';"
+                    >
+                    <div class="card-image-badges">
+                        <span class="badge-pill location-pill">
+                            <i class="fa-solid fa-location-dot"></i> {{ cafe.location }}
+                        </span>
+                        <span class="badge-pill score-pill" title="Work-Friendly Rating out of 10">
+                            <i class="fa-solid fa-bolt"></i> {{ cafe.work_score }}/10
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="card-header-row">
+                        <h2 class="cafe-name">{{ cafe.name }}</h2>
+                    </div>
+
+                    <!-- Amenities Checklist -->
+                    <div class="amenities-grid">
+                        <div class="amenity-item {{ 'active' if cafe.has_wifi else 'inactive' }}" title="{{ 'Fast Wi-Fi available' if cafe.has_wifi else 'No Wi-Fi' }}">
+                            <i class="fa-solid fa-wifi"></i>
+                            <span>{{ 'Wi-Fi' if cafe.has_wifi else 'No Wi-Fi' }}</span>
+                        </div>
+                        <div class="amenity-item {{ 'active' if cafe.has_sockets else 'inactive' }}" title="{{ 'Power sockets available' if cafe.has_sockets else 'Limited/No Sockets' }}">
+                            <i class="fa-solid fa-plug"></i>
+                            <span>{{ 'Sockets' if cafe.has_sockets else 'No Sockets' }}</span>
+                        </div>
+                        <div class="amenity-item {{ 'active' if cafe.can_take_calls else 'inactive' }}" title="{{ 'Can take calls / moderate noise' if cafe.can_take_calls else 'Quiet zone / no calls' }}">
+                            <i class="fa-solid fa-phone"></i>
+                            <span>{{ 'Calls OK' if cafe.can_take_calls else 'Quiet' }}</span>
+                        </div>
+                        <div class="amenity-item {{ 'active' if cafe.has_toilet else 'inactive' }}" title="{{ 'Restroom available' if cafe.has_toilet else 'No customer restroom' }}">
+                            <i class="fa-solid fa-restroom"></i>
+                            <span>{{ 'Restroom' if cafe.has_toilet else 'No WC' }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Meta specs: Seats & Coffee Price -->
+                    <div class="card-meta-row">
+                        <div class="meta-item">
+                            <i class="fa-solid fa-chair"></i>
+                            <span>{{ cafe.seats }} seats</span>
+                        </div>
+                        <div class="meta-item price-tag">
+                            <i class="fa-solid fa-mug-hot"></i>
+                            <span>{{ cafe.coffee_price }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Card Action Buttons -->
+                    <div class="card-actions">
+                        <a href="{{ cafe.map_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-map" title="Open Google Maps directions">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Maps
+                        </a>
+                        <button type="button" class="btn btn-sm btn-glass btn-details" onclick="openCafeDetails({{ cafe.id }})" title="View full cafe specifications">
+                            <i class="fa-solid fa-circle-info"></i> Details
+                        </button>
+                        <button type="button" class="btn btn-sm btn-glass btn-copy-link" onclick="copyMapLink('{{ cafe.map_url }}', '{{ cafe.name }}')" title="Copy Google Maps link">
+                            <i class="fa-regular fa-copy"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-glass-danger btn-delete" onclick="confirmDeleteCafe({{ cafe.id }}, '{{ cafe.name|escape }}')" title="Delete or report cafe">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </section>
+
+        <!-- No Results Fallback State -->
+        <div class="empty-state" id="empty-state" style="display: none;">
+            <div class="empty-icon"><i class="fa-solid fa-mug-saucer"></i></div>
+            <h3>No matching London cafes found</h3>
+            <p>Try clearing some filters or searching for another borough or cafe name.</p>
+            <button type="button" class="btn btn-primary" onclick="resetAllFilters()">
+                <i class="fa-solid fa-rotate-left"></i> Reset All Filters
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-mug-hot"></i>
+                </div>
+                <div>
+                    <h3 class="footer-title">LaptopFriendly London</h3>
+                    <p class="footer-desc">Curated remote work directory powered by SQLite & REST API.</p>
+                </div>
+            </div>
+            <div class="footer-links">
+                <a href="#hero"><i class="fa-solid fa-arrow-up"></i> Back to Top</a>
+                <a href="javascript:void(0)" onclick="openApiModal()"><i class="fa-solid fa-terminal"></i> Day 66 API Endpoints</a>
+                <a href="https://laptopfriendly.co/london" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-external-link"></i> Inspired by LaptopFriendly.co</a>
+            </div>
+            <div class="footer-copy">
+                &copy; 2026 LaptopFriendly London. Built with Python Flask & Vanilla CSS.
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========================================================= -->
+    <!-- MODAL: ADD NEW CAFE -->
+    <!-- ========================================================= -->
+    <div class="modal-backdrop" id="modal-add-cafe" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-dialog-lg">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <i class="fa-solid fa-plus-circle modal-icon"></i>
+                    <div>
+                        <h2 class="modal-title">Suggest a Laptop-Friendly Spot</h2>
+                        <p class="modal-subtitle">Add a cafe or workspace to our verified London directory</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close" onclick="closeAddModal()" aria-label="Close modal">&times;</button>
+            </div>
+
+            <div class="modal-body-split">
+                <!-- Left: Form -->
+                <form id="add-cafe-form" action="/add" method="POST" class="add-form">
+                    <div class="form-group">
+                        <label for="form-name">Cafe Name <span class="required">*</span></label>
+                        <input type="text" id="form-name" name="name" class="form-control" placeholder="e.g. Workshop Coffee, Monmouth..." required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="form-location">Neighborhood / Borough <span class="required">*</span></label>
+                            <input type="text" id="form-location" name="location" class="form-control" placeholder="e.g. Shoreditch, Fitzrovia..." required>
+                        </div>
+                        <div class="form-group">
+                            <label for="form-price">Coffee Price <span class="required">*</span></label>
+                            <input type="text" id="form-price" name="coffee_price" class="form-control" placeholder="e.g. £2.80" value="£2.80" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="form-seats">Seating Capacity</label>
+                            <select id="form-seats" name="seats" class="form-control">
+                                <option value="0-10">0-10 seats (Intimate)</option>
+                                <option value="10-20">10-20 seats (Cozy)</option>
+                                <option value="20-30" selected>20-30 seats (Medium)</option>
+                                <option value="30-40">30-40 seats (Comfortable)</option>
+                                <option value="40-50">40-50 seats (Spacious)</option>
+                                <option value="50+">50+ seats (Expansive)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="form-map">Google Maps URL <span class="required">*</span></label>
+                            <input type="url" id="form-map" name="map_url" class="form-control" placeholder="https://goo.gl/maps/..." required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="form-img">Image URL</label>
+                        <input type="url" id="form-img" name="img_url" class="form-control" placeholder="https://images... or pick a preset below">
+                        
+                        <!-- Quick Preset Photography Buttons -->
+                        <div class="preset-images-wrapper">
+                            <span class="preset-label">Quick photography presets:</span>
+                            <div class="preset-buttons">
+                                <button type="button" class="preset-btn" onclick="applyImagePreset('/static/images/hero.jpg')">
+                                    <i class="fa-solid fa-camera"></i> London Loft
+                                </button>
+                                <button type="button" class="preset-btn" onclick="applyImagePreset('/static/images/cafe_2.jpg')">
+                                    <i class="fa-solid fa-mug-hot"></i> Artisan Espresso
+                                </button>
+                                <button type="button" class="preset-btn" onclick="applyImagePreset('https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=800&q=80')">
+                                    <i class="fa-solid fa-sun"></i> Sunlit Minimal
+                                </button>
+                                <button type="button" class="preset-btn" onclick="applyImagePreset('https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80')">
+                                    <i class="fa-solid fa-leaf"></i> Greenhouse Cafe
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Amenities Checkboxes -->
+                    <div class="form-group">
+                        <label class="form-section-title">Amenities & Work Environment</label>
+                        <div class="checkbox-grid">
+                            <label class="custom-checkbox-card">
+                                <input type="checkbox" name="has_wifi" id="form-has-wifi" checked>
+                                <span class="checkbox-box"><i class="fa-solid fa-check"></i></span>
+                                <span class="checkbox-text"><i class="fa-solid fa-wifi"></i> High-Speed Wi-Fi</span>
+                            </label>
+                            <label class="custom-checkbox-card">
+                                <input type="checkbox" name="has_sockets" id="form-has-sockets" checked>
+                                <span class="checkbox-box"><i class="fa-solid fa-check"></i></span>
+                                <span class="checkbox-text"><i class="fa-solid fa-plug"></i> Power Sockets</span>
+                            </label>
+                            <label class="custom-checkbox-card">
+                                <input type="checkbox" name="can_take_calls" id="form-can-calls">
+                                <span class="checkbox-box"><i class="fa-solid fa-check"></i></span>
+                                <span class="checkbox-text"><i class="fa-solid fa-phone"></i> Call Friendly</span>
+                            </label>
+                            <label class="custom-checkbox-card">
+                                <input type="checkbox" name="has_toilet" id="form-has-toilet" checked>
+                                <span class="checkbox-box"><i class="fa-solid fa-check"></i></span>
+                                <span class="checkbox-text"><i class="fa-solid fa-restroom"></i> Customer WC</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer-actions">
+                        <button type="button" class="btn btn-glass" onclick="closeAddModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-add">
+                            <i class="fa-solid fa-plus"></i> Add Cafe to Directory
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Right: Live Real-time Card Preview -->
+                <div class="preview-column">
+                    <span class="preview-badge"><i class="fa-solid fa-eye"></i> LIVE PREVIEW</span>
+                    <div class="cafe-card preview-card" id="live-preview-card">
+                        <div class="card-image-wrap">
+                            <img src="/static/images/hero.jpg" id="prev-img" alt="Preview" class="cafe-image">
+                            <div class="card-image-badges">
+                                <span class="badge-pill location-pill" id="prev-location">
+                                    <i class="fa-solid fa-location-dot"></i> Neighborhood
+                                </span>
+                                <span class="badge-pill score-pill" id="prev-score">
+                                    <i class="fa-solid fa-bolt"></i> 8/10
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="cafe-name" id="prev-name">Your Cafe Name</h3>
+                            <div class="amenities-grid" id="prev-amenities">
+                                <div class="amenity-item active" id="prev-amenity-wifi"><i class="fa-solid fa-wifi"></i> <span>Wi-Fi</span></div>
+                                <div class="amenity-item active" id="prev-amenity-sockets"><i class="fa-solid fa-plug"></i> <span>Sockets</span></div>
+                                <div class="amenity-item inactive" id="prev-amenity-calls"><i class="fa-solid fa-phone"></i> <span>Quiet</span></div>
+                                <div class="amenity-item active" id="prev-amenity-toilet"><i class="fa-solid fa-restroom"></i> <span>Restroom</span></div>
+                            </div>
+                            <div class="card-meta-row">
+                                <div class="meta-item"><i class="fa-solid fa-chair"></i> <span id="prev-seats">20-30 seats</span></div>
+                                <div class="meta-item price-tag"><i class="fa-solid fa-mug-hot"></i> <span id="prev-price">£2.80</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL: CAFE DETAILS -->
+    <!-- ========================================================= -->
+    <div class="modal-backdrop" id="modal-details-cafe" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-dialog-md">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <i class="fa-solid fa-store modal-icon"></i>
+                    <div>
+                        <h2 class="modal-title" id="detail-modal-name">Cafe Name</h2>
+                        <p class="modal-subtitle" id="detail-modal-location">London Borough</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close" onclick="closeDetailsModal()" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body" id="detail-modal-content">
+                <!-- Dynamically injected via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL: DELETE CONFIRMATION -->
+    <!-- ========================================================= -->
+    <div class="modal-backdrop" id="modal-delete-confirm" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-dialog-sm">
+            <div class="modal-header">
+                <div class="modal-title-group danger">
+                    <i class="fa-solid fa-triangle-exclamation modal-icon"></i>
+                    <h2 class="modal-title">Delete Workspace</h2>
+                </div>
+                <button type="button" class="modal-close" onclick="closeDeleteModal()" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove <strong id="delete-cafe-name">this cafe</strong> from the London directory?</p>
+                <div class="form-group mt-3">
+                    <label for="delete-api-key" class="text-muted text-sm">
+                        Day 66 Admin API Key (Optional):
+                    </label>
+                    <input type="text" id="delete-api-key" class="form-control" placeholder="TopSecretAPIKey (optional)" value="TopSecretAPIKey">
+                    <small class="form-hint">Matches Day 66 REST API security challenge.</small>
+                </div>
+            </div>
+            <div class="modal-footer-actions">
+                <button type="button" class="btn btn-glass" onclick="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn btn-danger" id="btn-confirm-delete-action">
+                    <i class="fa-solid fa-trash"></i> Delete Cafe
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- MODAL: REST API DOCUMENTATION & LIVE TESTER -->
+    <!-- ========================================================= -->
+    <div class="modal-backdrop" id="modal-api-docs" aria-hidden="true" role="dialog">
+        <div class="modal-dialog modal-dialog-lg">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <i class="fa-solid fa-network-wired modal-icon"></i>
+                    <div>
+                        <h2 class="modal-title">Day 66 RESTful API Specification</h2>
+                        <p class="modal-subtitle">Full programmatic access with JSON responses & live endpoint testing</p>
+                    </div>
+                </div>
+                <button type="button" class="modal-close" onclick="closeApiModal()" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="api-intro">
+                    This website serves both high-speed interactive UI and the full <strong>Day 66 RESTful API</strong> endpoints. Test any endpoint live below:
+                </p>
+
+                <div class="api-endpoints-list">
+                    <div class="api-endpoint-card">
+                        <div class="api-endpoint-header">
+                            <span class="http-badge get">GET</span>
+                            <code>/api/cafes</code> or <code>/api/all</code>
+                            <button type="button" class="btn btn-sm btn-glass" onclick="testApiEndpoint('/api/cafes')">Try It</button>
+                        </div>
+                        <p class="api-endpoint-desc">Returns a complete list of all cafes and work ratings in JSON.</p>
+                    </div>
+
+                    <div class="api-endpoint-card">
+                        <div class="api-endpoint-header">
+                            <span class="http-badge get">GET</span>
+                            <code>/api/random</code>
+                            <button type="button" class="btn btn-sm btn-glass" onclick="testApiEndpoint('/api/random')">Try It</button>
+                        </div>
+                        <p class="api-endpoint-desc">Returns a random cafe picked from the database.</p>
+                    </div>
+
+                    <div class="api-endpoint-card">
+                        <div class="api-endpoint-header">
+                            <span class="http-badge get">GET</span>
+                            <code>/api/search?loc=Peckham</code>
+                            <button type="button" class="btn btn-sm btn-glass" onclick="testApiEndpoint('/api/search?loc=Peckham')">Try It</button>
+                        </div>
+                        <p class="api-endpoint-desc">Search cafes by borough location or keyword.</p>
+                    </div>
+
+                    <div class="api-endpoint-card">
+                        <div class="api-endpoint-header">
+                            <span class="http-badge post">POST</span>
+                            <code>/api/add</code>
+                            <span class="api-badge-tag">JSON Payload</span>
+                        </div>
+                        <p class="api-endpoint-desc">Adds a new cafe with amenities to SQLite database.</p>
+                    </div>
+
+                    <div class="api-endpoint-card">
+                        <div class="api-endpoint-header">
+                            <span class="http-badge delete">DELETE</span>
+                            <code>/api/delete/&lt;id&gt;?api-key=TopSecretAPIKey</code>
+                        </div>
+                        <p class="api-endpoint-desc">Removes a cafe using Day 66 admin API key verification.</p>
+                    </div>
+                </div>
+
+                <!-- API Response Output Console -->
+                <div class="api-console-wrapper" id="api-console-wrap" style="display: none;">
+                    <div class="api-console-header">
+                        <span class="console-title"><i class="fa-solid fa-terminal"></i> Live Response (<span id="api-tested-url">/api/cafes</span>)</span>
+                        <button type="button" class="btn-copy-code" onclick="copyConsoleOutput()"><i class="fa-regular fa-copy"></i> Copy</button>
+                    </div>
+                    <pre class="api-console-body"><code id="api-console-code">...</code></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+    <!-- Cafes Data for Client-Side Instant Filtering and Manipulation -->
+    <script>
+        window.INITIAL_CAFES = {{ cafes|tojson }};
+    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
