@@ -8,6 +8,7 @@ Projects built while working through the **100 Days of Code: Python Pro Bootcamp
 | --- | --- |
 | [`Morse_code_generator`](./Morse_code_generator) | Converts text to Morse code. |
 | [`Multivariable+Regression+(Start)`](./Multivariable%2BRegression%2B(Start)) | Multivariable regression exercise from the course's data-science section (course starter files). Uses the pandas / scikit-learn / plotly stack listed below. |
+| [`Disappearing text writing app`](./Disappearing%20text%20writing%20app) | A Tkinter writing exercise that erases the page after five seconds without typing. |
 | [`Watermarker`](./Watermarker) | Tool for adding a watermark to images. |
 | [`breakout-game`](./breakout-game) | Steve Wozniak's classic Breakout arcade game built with Python Turtle graphics. |
 | [`button_presser`](./button_presser) | Small automation script. |
@@ -59,6 +60,7 @@ Entry-point filenames vary by project, so check each folder for its main script 
 .
 ├── Morse_code_generator/
 ├── Multivariable+Regression+(Start)/
+├── Disappearing text writing app/
 ├── Watermarker/
 ├── breakout-game/
 ├── button_presser/
